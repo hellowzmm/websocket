@@ -1,0 +1,24 @@
+{
+  "name": "websocket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "formidable": "^1.1.1",
+    "gm": "^1.23.0",
+    "mongodb": "^2.2.33",
+    "mongoose": "^4.12.3",
+    "socket.io": "^2.0.3"
+  },
+  "dependencies": {
+    "jquery-mobile": "^1.5.0-alpha.1"
+  }
+}

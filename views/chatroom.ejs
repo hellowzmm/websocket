@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <%include header.ejs%>
+        <div class="container">
+            <div id="userinfo" style="text-align:center" class="col-sm-2">
+                <img id="avatar" style="width: 100px;" src="/<%= avatar %>" alt="">
+                <p>
+                    <%= username %>
+                </p>
+            </div>
+            <div class="col-sm-10">
+                <div style="position:relative;width:80%;" class="text-center">
+                    <h3 style="margin:0;padding:0">
+                        <%= id%>
+                    </h3>
+                </div>
+                <div id="chatroom-container">
+                </div>
+                <form id="form">
+                    <%if(!forbiddenroom){%>
+                        <% if(!forbidden) { %>
+                            <textarea style="border-radius: 10px;font-size: 19px;outline: none" class="form-control" id="shuoshuo"></textarea>
+                            <a style="cursor:pointer;text-decoration:none" class="form-control text-center btn btn-primary" id="fabiao">发言</a>
+                            <% } else{%>
+                                <p style="background:red;cursor:normal;text-decoration:none" class="form-control text-center">已被禁言,请联系管理员</p>
+                                <%}%>
+                                    <%}else{%>
+                                        <p style="background:red;cursor:normal;text-decoration:none" class="form-control text-center">房间已被封禁</p>
+                                        <%}%>
+                </form>
+            </div>
+        </div>
+        <script src="bootstrap/js/jquery.min.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io()
+            var forbiddenroom = false
+            var forbiddenuser = false
+            socket.on('chatroom', function(_msg) {
+                if (_msg.id !== '<%= id%>') {
+                    return
+                }
+                if (_msg.forbiddenuser) {
+                    alert("你已被禁言请联系管理员")
+                    return
+                }
+                if ('<%= forbiddenroom%>' == 'true' || _msg.forbiddenroom) {
+                    alert("此房间已被禁言")
+                    return
+                }
+                var lhtml =
+                    `<div class="media"><div class="media-left"><a><img style="width:40px" class="media-object" src="${_msg.avatar}"></a></div><div class="media-body"><h4 class="media-heading">${_msg.username}:</h4><div  style="border:1px solid#eee;border-radius:10px;padding:5px;word-break:break-all;color:black;background:#eee;padding:10px;display:inline-block">${_msg.message}</div></div></div>`
+                var rhtml =
+                    `<div class="media"><div class="media-left"><a><img style="width:40px" class="media-object" src="${_msg.avatar}"></a></div><div class="media-body"><h4 class="media-heading">${_msg.username}:</h4><div  style="border:1px solidrgb(2, 133, 255);border-radius:10px;padding:5px;word-break:break-all;color:white;background:rgb(2, 133, 255);padding:10px;display:inline-block">${_msg.message}</div></div></div>`
+                if (_msg.username == '<%= username%>') {
+                    $("#chatroom-container").append(rhtml)
+                } else {
+                    $("#chatroom-container").append(lhtml)
+                }
+                var div = document.getElementById("chatroom-container")
+                div.scrollTop = div.scrollHeight
+            })
+
+            $.get("/getrecords?id=<%= id%>", {
+                page: 0
+            }, function(result) {
+                if (result.length <= 0) {
+                    return
+                }
+                $("#chatroom-container").append(
+                    "<p style='text-align:center;font-size:5px'>更多记录请查看<a href='/records?id=<%= id%>'>聊天记录</a></>")
+                result = result.reverse()
+                result.forEach(function(element) {
+                    if (element.username == '<%= username%>') {
+                        var html =
+                            `<div class="media"><div class="media-left"><a><img style="width:40px" class="media-object" src="${element.avatar}"></a></div><div  class="media-body"><h4 class="media-heading">${element.username}:</h4><div style="border:1px solidrgb(2, 133, 255);border-radius:10px;padding:5px;word-break:break-all;color:white;background:rgb(2, 133, 255);padding:10px;display:inline-block">${element.message}</div></div></div>`
+                    } else {
+                        var html =
+                            `<div class="media"><div class="media-left"><a><img style="width:40px" class="media-object" src="${element.avatar}"></a></div><div class="media-body"><h4 class="media-heading">${element.username}:</h4><div  style="border:1px solid#eee;border-radius:10px;padding:5px;word-break:break-all;color:black;background:#eee;padding:10px;display:inline-block">${element.message}</div></div></div>`
+                    }
+                    $("#chatroom-container").append(html)
+                    var div = document.getElementById("chatroom-container")
+                    div.scrollTop = div.scrollHeight
+                }, this);
+                $("#chatroom-container").append("<p style='text-align:center;font-size:5px;margin:3px 0'>" +
+                    result[result.length - 1].time + "</p>")
+            })
+
+            $("#fabiao").click(function() {
+                if(!$("#shuoshuo").val()){
+                    alert("不能输入空内容")
+                    return
+                }
+                socket.emit("chatroom", {
+                    "id": "<%= id%>",
+                    "username": "<%= username%>",
+                    "message": $("#shuoshuo").val().toString()
+                })
+                $("#shuoshuo").val('') //将input元素的value设为空值
+            })
+
+            $("#fabiao")[0].addEventListener("touchstart", function(e) {
+                e.preventDefault()
+                socket.emit("chatroom", {
+                    "id": "<%= id%>",
+                    "username": "<%= username%>",
+                    "message": $("#shuoshuo").val().toString()
+                })
+                $("#shuoshuo").val('') //将input元素的value设为空值
+            })
+
+            $("body").keydown(function(event) {
+                event = event || window.event;
+                if (event.keyCode == "13") { //keyCode=13是回车键
+                    if (event.keyCode == 13) {
+                        $("#fabiao").click()
+                        event.returnValue = false;
+                        return false;
+                    }
+                }
+            });
+
+            $("body").on("click", "#logoutbtn", function() {
+                $.get("/dologout", function(result) {
+                    if (result == "1")
+                        window.location = "/"
+                })
+            })
+        </script>
+</body>
+
+</html>

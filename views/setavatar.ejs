@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/jqcrop/css/jquery.Jcrop.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <%include header.ejs%>
+        <div class="container">
+            <h1>选择头像</h1>
+            <img src="<%=avatar%>" id="target" alt="[Jcrop Example]" />
+            <h1></h1>
+            <div id="preview-pane">
+                <div class="preview-container">
+                    <img src="<%=avatar%>" id="target1" class="jcrop-preview" alt="Preview" />
+                </div>
+            </div>
+            <form enctype="multipart/form-data" action="/uploadavatar" method="post">
+                <div class="form-group">
+                    <input required class="form-control" name="avatar" type="file" id="filepath">
+                </div>
+                <button id="setbtn" type="submit" class="btn btn-primary">上传</button>
+                <button id="cropbtn" type="button" class="btn btn-primary">裁剪</button>
+                <p id="mobile">暂时移动端无法裁剪</p>
+            </form>
+        </div>
+        <script src="/bootstrap/js/jquery.min.js"></script>
+        <script src="/bootstrap/js/bootstrap.min.js"></script>
+        <script src="/jqcrop/js/jquery.Jcrop.js"></script>
+        <script>
+            $("body").on("click", "#logoutbtn", function () {
+                $.get("/dologout", function (result) {
+                    if (result == "1")
+                        window.location = "/"
+                })
+            })
+            $("#setbtn").click(function () {
+                window.location = "/setAvatar"
+            })
+            //
+            var jcrop_api,
+                boundx,
+                boundy,
+
+                // Grab some information about the preview pane
+                $preview = $('#preview-pane'),
+                $pcnt = $('#preview-pane .preview-container'),
+                $pimg = $('#preview-pane .preview-container img'),
+
+                xsize = $pcnt.width(),
+                ysize = $pcnt.height();
+
+            console.log('init', [xsize, ysize]);
+            $('#target').Jcrop({
+                onChange: updatePreview,
+                onSelect: updatePreview,
+                aspectRatio: xsize / ysize
+            }, function () {
+                // Use the API to get the real image size
+                var bounds = this.getBounds();
+                boundx = bounds[0];
+                boundy = bounds[1];
+                // Store the API in the jcrop_api variable
+                jcrop_api = this;
+
+                // Move the preview into the jcrop container for css positioning
+                $preview.appendTo(jcrop_api.ui.holder);
+            });
+
+            function updatePreview(c) {
+                if (parseInt(c.w) > 0) {
+                    var rx = xsize / c.w;
+                    var ry = ysize / c.h;
+
+                    var width = Math.round(rx * boundx)
+                    var height = Math.round(ry * boundy)
+                    var ml = Math.round(rx * c.x)
+                    var mt = Math.round(ry * c.y)
+
+                    $pimg.css({
+                        width: width + 'px',
+                        height: height + 'px',
+                        marginLeft: '-' + ml + 'px',
+                        marginTop: '-' + mt + 'px'
+                    });
+
+                }
+            };
+            $("#cropbtn").click(function () {
+                var w = $(".jcrop-holder>div:first").css("width")
+                var h = $(".jcrop-holder>div:first").css("height")
+                var x = $(".jcrop-holder>div:first").css("left")
+                var y = $(".jcrop-holder>div:first").css("top")
+                $.get("/cropavatar", {
+                    "filename": $("#target").attr("src"),
+                    "w": w,
+                    "h": h,
+                    "x": x,
+                    "y": y
+                }, function (result) {
+                    if (result == "1") {
+                        window.location = "/setAvatar"
+                    }
+                })
+            })
+        </script>
+</body>
+
+</html>

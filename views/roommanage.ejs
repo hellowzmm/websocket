@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <%include header.ejs%>
+        <div class="container" id="container">
+            <a id="newroonbtn" class="btn btn-info btn-lg" style="margin:10px">新建房间</a>
+            <form enctype="multipart/form-data" action="/newroom" method="post" id="newroomform" style="display:none;margin:10px">
+                <div class="form-group">
+                    <label for="roomid">房间ID</label>
+                    <input type="text" class="form-control" name="id" placeholder="房间ID">
+                </div>
+                <div class="form-group">
+                    <label for="roomintroduction">房间介绍</label>
+                    <input type="text" class="form-control" name="introduction" placeholder="房间介绍">
+                </div>
+                <div class="form-group">
+                    <label for="roomavatar">房间头像</label>
+                    <input type="file" name="avatar">
+                </div>
+                <button  type="submit" class="btn btn-primary">新建</button>
+            </form>
+            <hr>
+            <table style="text-align:center;width:100%">
+                <%if(rooms.length){%>
+                    <tr>
+                        <td style="border:1px solid#333;width:40%">房间ID</td>
+                        <td style="border:1px solid#333;width:20%">操作</td>
+                    </tr>
+                    <% for(var i = 0 ;i < rooms.length ; i++){%>
+                        <tr>
+                            <td style="border:1px solid#333;width:40%">
+                                <%= rooms[i].id%>
+                            </td>
+                            <td style="border:1px solid#333;width:20%">
+                                <% if(rooms[i].forbidden){%>
+                                    <button style="margin:4px" data-room="<%= rooms[i].id%>" class="btn btn-danger unForbiddenBtn">解除禁言</button>
+                                    <%} else {%>
+                                        <button style="margin:4px" data-room="<%= rooms[i].id%>" class="btn btn-danger forbiddenBtn">禁言</button>
+                                        <%}%>
+                                            <button style="margin:4px" data-room="<%= rooms[i].id%>" class="btn btn-danger deleteBtn">删除</button>
+                            </td>
+                        </tr>
+                        <%}%>
+                            <%}else{%>
+                                <p style="text-align:center">暂无房间数据</p>
+                                <%}%>
+            </table>
+        </div>
+        <script src="bootstrap/js/jquery.min.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+        <script>
+            $(".unForbiddenBtn").click(function() {
+                $.get("/unforbiddenroom", {
+                    "id": $(this).attr("data-room")
+                }, function(result) {
+                    if (result == "-1") {
+                        alert("服务器错误")
+                        return
+                    }
+                    alert("解除禁言成功")
+                    window.location = '/roommanage'
+                })
+            })
+            $(".forbiddenBtn").click(function() {
+                $.get("/forbiddenroom", {
+                    "id": $(this).attr("data-room")
+                }, function(result) {
+                    if (result == "-1") {
+                        alert("服务器错误")
+                        return
+                    }
+                    alert("禁言成功")
+                    window.location = '/roommanage'
+                })
+            })
+            $(".deleteBtn").click(function() {
+                $.get("/deleteroom", {
+                    "id": $(this).attr("data-room")
+                }, function(result) {
+                    if (result == "-1") {
+                        alert("服务器错误")
+                        return
+                    }
+                    alert("删除成功")
+                    window.location = '/roommanage'
+                })
+            })
+            $("body").on("click", "#logoutbtn", function() {
+                $.get("/dologout", function(result) {
+                    if (result == "1")
+                        window.location = "/"
+                })
+            })
+
+            $("body").on("click", "#newroonbtn", function() {
+                $("#newroomform").slideToggle()
+            })
+        </script>
+</body>
+
+</html>

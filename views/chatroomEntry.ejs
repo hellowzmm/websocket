@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <%include header.ejs%>
+        <div id="chatroomEntry" class="container">
+            <%for(var i = 0 ;i < rooms.length ; i++){%>
+                <div class="media">
+                    <div class="media-left">
+                        <%if(rooms[i].forbidden){%>
+                            <a>
+                                <img width="100" height="100" class="media-object" src="images/forbidden.jpg" alt="...">
+                            </a>
+                            <%}else{%>
+                                <a href="/chatroom?id=<%= rooms[i].id%>">
+                                    <img width="100" height="100" class="media-object" src="images/<%= rooms[i].avatar%>" alt="...">
+                                </a>
+                                <%}%>
+                    </div>
+                    <div class="media-body">
+                        <h2 class="media-heading">
+                            <%= rooms[i].id%>
+                        </h2>
+                        <%= rooms[i].introduction%>
+                    </div>
+                </div>
+                <%}%>
+        </div>
+        <script src="bootstrap/js/jquery.min.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+        <script>
+        </script>
+</body>
+
+</html>
